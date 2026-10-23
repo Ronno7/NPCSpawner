@@ -13,8 +13,12 @@ public class NPCFactory : MonoBehaviour
                 return new Farmer();
             case NPCType.Shopowner:
                 return new Shopowner();
+            case NPCType.Guard:
+                return new Guard();
+            case NPCType.Blacksmith:
+                return new Blacksmith();
             default:
-                return null;
+                throw new System.ArgumentOutOfRangeException(nameof(type), type, "Unknown villager type.");
         }
     }
 }
