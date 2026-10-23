@@ -4,7 +4,7 @@ Requirements based Unity spawn demo following [Gary Woodfine's approach](https:/
 
 ## Play
 
-Open the [WebGL build](abstract-factory-demo/index.html) through a web server. Choose **Day / Night** and **Peaceful / Threatened**, then press **Spawn**.
+Open the [WebGL build]([abstract-factory-demo/index.html](https://ronno7.github.io/NPCSpawner/)). Choose **Day / Night** and **Peaceful / Threatened**, then press **Spawn**.
 
 | Village safety | Time | Factory | Character |
 | --- | --- | --- | --- |
