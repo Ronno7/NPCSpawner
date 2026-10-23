@@ -1,18 +1,24 @@
-# NPC Spawner
+# Abstract Factory NPC Spawner
 
-Small Unity demonstration of factory pattern, based on the NPC example in Baron's factory chapter.
-
-## Additions
-
-- **Guard** and **Blacksmith** join the original Farmer, Beggar, and Shopowner. Each implements `INPC` and has a short line explaining its role.
-- A plain scene displays labeled capsule figures and their dialogue after pressing **Spawn villagers** or **S**. The figures appear one at a time, 0.3 seconds apart.
-- Muted colours distinguish the roles: sage for Farmer, taupe for Beggar, ochre for Shopowner, slate blue for Guard, and clay for Blacksmith.
-- Repeated spawning cancels any unfinished reveal and starts a fresh group instead of accumulating villagers.
-
-## How it works
-
-`NPCSpawner` requests villagers from `NPCFactory`, which creates each type through the shared `INPC` interface. `NPCDemoView` displays them one at a time with labels and dialogue.
+A requirements-based Unity spawn demo following [Gary Woodfine's approach](https://dev.to/gary_woodfine/how-to-use-the-abstract-factory-design-pattern-in-c-1gpa).
 
 ## Play
 
-Open the web build and click **Spawn villagers** or press **S**.
+Open the [WebGL build](abstract-factory-demo/index.html) through a web server. Choose **Day / Night** and **Peaceful / Threatened**, then press **Spawn**.
+
+| Village safety | Time | Factory | Character |
+| --- | --- | --- | --- |
+| Peaceful | Day | FriendlyCharacterFactory | Merchant |
+| Peaceful | Night | FriendlyCharacterFactory | Night Watch |
+| Threatened | Day | HostileCharacterFactory | Raider |
+| Threatened | Night | HostileCharacterFactory | Infiltrator |
+
+## How it works
+
+`CharacterFactory` receives `SpawnRequirements` and selects one of two concrete factories based on village safety. That factory uses time of day to create an `INPC`. The scene instantiates a capsule for the result, with a muted group colour, name, and dialogue. Each spawn replaces the previous character.
+
+## Project
+
+Unity **6000.3.24f1**. Scene: `NPCSpawner/Assets/Scenes/AbstractFactoryDemo.unity`. Scripts: `NPCSpawner/Assets/Scripts/AbstractFactory`. The previous assignment remains in `SampleScene` and on branch `++`.
+
+Reference: [Woodfine's sample repository](https://github.com/garywoodfine/software-design-patterns). This demo follows the article's refactored requirements-driven factory structure.
