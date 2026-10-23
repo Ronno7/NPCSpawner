@@ -1,6 +1,6 @@
 # Abstract Factory NPC Spawner
 
-A requirements-based Unity spawn demo following [Gary Woodfine's approach](https://dev.to/gary_woodfine/how-to-use-the-abstract-factory-design-pattern-in-c-1gpa).
+Requirements based Unity spawn demo following [Gary Woodfine's approach](https://dev.to/gary_woodfine/how-to-use-the-abstract-factory-design-pattern-in-c-1gpa).
 
 ## Play
 
@@ -19,6 +19,6 @@ Open the [WebGL build](abstract-factory-demo/index.html) through a web server. C
 
 ## Project
 
-Unity **6000.3.24f1**. Scene: `NPCSpawner/Assets/Scenes/AbstractFactoryDemo.unity`. Scripts: `NPCSpawner/Assets/Scripts/AbstractFactory`. The previous assignment remains in `SampleScene` and on branch `++`.
+Unity **6000.3.24f1**. Scene: `NPCSpawner/Assets/Scenes/AbstractFactoryDemo.unity`. Scripts: `NPCSpawner/Assets/Scripts/AbstractFactory`.
 
 Reference: [Woodfine's sample repository](https://github.com/garywoodfine/software-design-patterns). This demo follows the article's refactored requirements-driven factory structure.

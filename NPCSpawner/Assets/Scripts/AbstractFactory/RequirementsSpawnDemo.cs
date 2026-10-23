@@ -44,8 +44,8 @@ public class RequirementsSpawnDemo : MonoBehaviour
         var previous = GUI.matrix;
         GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1000 * scale) / 2,
             (Screen.height - 600 * scale) / 2, 0), Quaternion.identity, Vector3.one * scale);
-        GUI.Label(new Rect(45, 30, 900, 45), "Requirements-based NPC Spawner", title);
-        GUI.Label(new Rect(45, 82, 900, 35), "Choose the conditions, then spawn a character.", text);
+        GUI.Label(new Rect(45, 30, 900, 45), "Requirements based NPC Spawner", title);
+        GUI.Label(new Rect(45, 82, 900, 35), "Choose conditions then spawn the corresponding character.", text);
         GUI.Label(new Rect(45, 170, 330, 30), "Time of day", text);
         timeChoice = GUI.Toolbar(new Rect(45, 210, 330, 44), timeChoice, Times, control);
         GUI.Label(new Rect(45, 285, 330, 30), "Village safety", text);
@@ -53,7 +53,7 @@ public class RequirementsSpawnDemo : MonoBehaviour
         if (GUI.Button(new Rect(45, 420, 330, 48), "Spawn", control))
             Spawn((TimeOfDay)timeChoice, (VillageSafety)safetyChoice);
         if (CurrentCharacter == null)
-            GUI.Label(new Rect(530, 330, 380, 60), "Your character will appear here.", centered);
+            GUI.Label(new Rect(530, 330, 380, 60), "Character Spawns Here", centered);
         else
         {
             GUI.Label(new Rect(530, 360, 380, 36), CurrentCharacter.DisplayName, centered);
