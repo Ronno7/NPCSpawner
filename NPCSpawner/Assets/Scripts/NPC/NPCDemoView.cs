@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,22 +10,63 @@ public class NPCDemoView : MonoBehaviour
     private NPCSpawner spawner;
     private readonly List<GameObject> figures = new List<GameObject>();
     private GUIStyle heading, label, dialogue, button;
+    private Coroutine reveal;
+    private MaterialPropertyBlock tint;
+    // NPCType order: farmer, beggar, shopowner, guard, blacksmith.
+    private static readonly Color[] RoleColors =
+    {
+        new Color(.56f, .67f, .51f), // sage
+        new Color(.65f, .59f, .51f), // taupe
+        new Color(.72f, .61f, .44f), // ochre
+        new Color(.49f, .61f, .70f), // slate blue
+        new Color(.69f, .51f, .44f)  // clay
+    };
 
-    private void Awake() => spawner = GetComponent<NPCSpawner>();
-    private void OnEnable() => spawner.VillagersSpawned += ShowVillagers;
-    private void OnDisable() => spawner.VillagersSpawned -= ShowVillagers;
+    private void Awake()
+    {
+        spawner = GetComponent<NPCSpawner>();
+        tint = new MaterialPropertyBlock();
+    }
+    private void OnEnable()
+    {
+        spawner.VillagersSpawned += ShowVillagers;
+        if (spawner.Villagers.Count > 0) ShowVillagers();
+    }
+
+    private void OnDisable()
+    {
+        spawner.VillagersSpawned -= ShowVillagers;
+        if (reveal != null) StopCoroutine(reveal);
+        reveal = null;
+    }
 
     private void ShowVillagers()
     {
-        foreach (GameObject figure in figures) Destroy(figure);
+        // A new request cancels the previous reveal, including rapid S presses.
+        if (reveal != null) StopCoroutine(reveal);
+        foreach (GameObject figure in figures)
+        {
+            figure.SetActive(false);
+            Destroy(figure);
+        }
         figures.Clear();
+        reveal = StartCoroutine(RevealVillagers());
+    }
+
+    private IEnumerator RevealVillagers()
+    {
         for (int i = 0; i < spawner.Villagers.Count; i++)
         {
             float x = (i - (spawner.Villagers.Count - 1) * .5f) * 2.4f;
             GameObject figure = Instantiate(villagerPrefab, new Vector3(x, 1, 0), Quaternion.identity, transform);
             figure.name = spawner.Villagers[i].DisplayName;
+            // Per-renderer tint keeps the shared prefab material unchanged.
+            tint.SetColor("_BaseColor", RoleColors[i % RoleColors.Length]);
+            figure.GetComponent<Renderer>().SetPropertyBlock(tint);
             figures.Add(figure);
+            yield return new WaitForSeconds(.3f);
         }
+        reveal = null;
     }
 
     private void OnGUI()
