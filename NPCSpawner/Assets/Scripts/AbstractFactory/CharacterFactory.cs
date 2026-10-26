@@ -7,7 +7,9 @@ public sealed class CharacterFactory : AbstractCharacterFactory
     public CharacterFactory(SpawnRequirements requirements)
     {
         this.requirements = requirements ?? throw new System.ArgumentNullException(nameof(requirements));
-        factory = requirements.Safety == VillageSafety.Peaceful
+        factory = requirements.Weather == Weather.Storm
+            ? new RescueCharacterFactory()
+            : requirements.Safety == VillageSafety.Peaceful
             ? (ICharacterFactory)new FriendlyCharacterFactory()
             : new HostileCharacterFactory();
     }

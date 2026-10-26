@@ -1,34 +1,70 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class RequirementsSpawnDemo : MonoBehaviour
 {
+    public const int Capacity = 6;
     public GameObject characterPrefab;
     public INPC CurrentCharacter { get; private set; }
     public SpawnRequirements LastRequirements { get; private set; }
-    private int timeChoice, safetyChoice;
-    private GameObject figure;
+    public int Count => figures.Count;
+    private int timeChoice, safetyChoice, weatherChoice;
+    private readonly List<GameObject> figures = new List<GameObject>();
+    private readonly List<INPC> characters = new List<INPC>();
     private GUIStyle title, text, centered, control;
+    private AudioSource audioSource;
+    private AudioClip spawnSound;
     private static readonly string[] Times = { "Day", "Night" };
     private static readonly string[] Safety = { "Peaceful", "Threatened" };
+    private static readonly string[] WeatherChoices = { "Clear", "Storm" };
 
-    public void Spawn(TimeOfDay time, VillageSafety safety)
+    private void Awake()
     {
-        LastRequirements = new SpawnRequirements(time, safety);
-        AbstractCharacterFactory factory = new CharacterFactory(LastRequirements);
-        CurrentCharacter = factory.Create();
-        CurrentCharacter.Speak();
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0;
+        spawnSound = SpawnPresentation.CreateSpawnSound();
+        SpawnPresentation.Part(transform, characterPrefab.GetComponent<Renderer>().sharedMaterial,
+            PrimitiveType.Cube, "Ground platform", new Vector3(0, -.22f, 0),
+            new Vector3(12, .22f, 1.5f), new Color(.30f, .34f, .35f));
+    }
 
-        if (figure != null)
+    public void Spawn(TimeOfDay time, VillageSafety safety, Weather weather = Weather.Clear)
+    {
+        if (Count >= Capacity) return;
+        var requirements = new SpawnRequirements(time, safety, weather);
+        AbstractCharacterFactory factory = new CharacterFactory(requirements);
+        INPC character = factory.Create();
+        var figure = Instantiate(characterPrefab, new Vector3(-5 + Count * 2, .6f, 0), Quaternion.identity, transform);
+        figure.name = character.DisplayName;
+        figure.transform.localScale = Vector3.one * .65f;
+        SpawnPresentation.Tint(figure, SpawnPresentation.GroupColor(requirements));
+        SpawnPresentation.AddProp(figure, character);
+        figures.Add(figure);
+        characters.Add(character);
+        LastRequirements = requirements;
+        CurrentCharacter = character;
+        character.Speak();
+        audioSource.PlayOneShot(spawnSound);
+    }
+
+    public void Clear()
+    {
+        foreach (var figure in figures)
         {
             figure.SetActive(false);
             Destroy(figure);
         }
-        figure = Instantiate(characterPrefab, new Vector3(2.5f, 1, 0), Quaternion.identity, transform);
-        figure.name = CurrentCharacter.DisplayName;
-        var tint = new MaterialPropertyBlock();
-        tint.SetColor("_BaseColor", safety == VillageSafety.Peaceful
-            ? new Color(.56f, .67f, .51f) : new Color(.69f, .51f, .44f));
-        figure.GetComponent<Renderer>().SetPropertyBlock(tint);
+        figures.Clear();
+        characters.Clear();
+        CurrentCharacter = null;
+        LastRequirements = null;
+        audioSource.Stop();
+    }
+
+    private void OnDestroy()
+    {
+        if (spawnSound != null) Destroy(spawnSound);
     }
 
     private void OnGUI()
@@ -36,32 +72,42 @@ public class RequirementsSpawnDemo : MonoBehaviour
         if (title == null)
         {
             title = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold };
-            text = new GUIStyle(GUI.skin.label) { fontSize = 17, wordWrap = true };
+            text = new GUIStyle(GUI.skin.label) { fontSize = 16, wordWrap = true };
             centered = new GUIStyle(text) { alignment = TextAnchor.UpperCenter };
             control = new GUIStyle(GUI.skin.button) { fontSize = 18 };
         }
-        float scale = Mathf.Min(Screen.width / 1000f, Screen.height / 600f);
+        float scale = Mathf.Min(Screen.width / 1100f, Screen.height / 650f);
+        Vector2 offset = new Vector2((Screen.width - 1100 * scale) / 2, (Screen.height - 650 * scale) / 2);
         var previous = GUI.matrix;
-        GUI.matrix = Matrix4x4.TRS(new Vector3((Screen.width - 1000 * scale) / 2,
-            (Screen.height - 600 * scale) / 2, 0), Quaternion.identity, Vector3.one * scale);
-        GUI.Label(new Rect(45, 30, 900, 45), "Requirements based NPC Spawner", title);
-        GUI.Label(new Rect(45, 82, 900, 35), "Choose conditions then spawn the corresponding character.", text);
-        GUI.Label(new Rect(45, 170, 330, 30), "Time of day", text);
-        timeChoice = GUI.Toolbar(new Rect(45, 210, 330, 44), timeChoice, Times, control);
-        GUI.Label(new Rect(45, 285, 330, 30), "Village safety", text);
-        safetyChoice = GUI.Toolbar(new Rect(45, 325, 330, 44), safetyChoice, Safety, control);
-        if (GUI.Button(new Rect(45, 420, 330, 48), "Spawn", control))
-            Spawn((TimeOfDay)timeChoice, (VillageSafety)safetyChoice);
-        if (CurrentCharacter == null)
-            GUI.Label(new Rect(530, 330, 380, 60), "Character Spawns Here", centered);
-        else
+        GUI.matrix = Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one * scale);
+        GUI.Label(new Rect(40, 25, 1000, 45), "Spawn Systems ++", title);
+        GUI.Label(new Rect(40, 75, 1000, 30), "Choose conditions and build a group of up to six characters.", text);
+        GUI.Label(new Rect(40, 120, 310, 25), "Time of day", text);
+        timeChoice = GUI.Toolbar(new Rect(40, 150, 310, 42), timeChoice, Times, control);
+        GUI.Label(new Rect(395, 120, 310, 25), "Village safety", text);
+        safetyChoice = GUI.Toolbar(new Rect(395, 150, 310, 42), safetyChoice, Safety, control);
+        GUI.Label(new Rect(750, 120, 310, 25), "Weather", text);
+        weatherChoice = GUI.Toolbar(new Rect(750, 150, 310, 42), weatherChoice, WeatherChoices, control);
+        for (int i = 0; i < Count; i++)
         {
-            GUI.Label(new Rect(530, 360, 380, 36), CurrentCharacter.DisplayName, centered);
-            GUI.Label(new Rect(530, 402, 380, 70), CurrentCharacter.Dialogue, centered);
-            string group = LastRequirements.Safety == VillageSafety.Peaceful ? "Friendly" : "Hostile";
-            GUI.Label(new Rect(530, 490, 380, 65), group + " / " + LastRequirements.Time + " / " + LastRequirements.Safety, centered);
+            var screen = Camera.main.WorldToScreenPoint(figures[i].transform.position + Vector3.down * .85f);
+            float x = (screen.x - offset.x) / scale;
+            float y = (Screen.height - screen.y - offset.y) / scale;
+            GUI.Label(new Rect(x - 80, y + 12, 160, 50), characters[i].DisplayName, centered);
         }
-        GUI.Label(new Rect(45, 535, 400, 45), "New choices take effect when you press Spawn.", text);
+        if (CurrentCharacter == null)
+            GUI.Label(new Rect(200, 455, 700, 55), "The platform is ready. Choose conditions and press Spawn.", centered);
+        else
+            GUI.Label(new Rect(150, 455, 800, 55), CurrentCharacter.DisplayName + ": " + CurrentCharacter.Dialogue, centered);
+        GUI.enabled = Count < Capacity;
+        if (GUI.Button(new Rect(300, 530, 230, 45), "Spawn  (" + Count + " / " + Capacity + ")", control))
+            Spawn((TimeOfDay)timeChoice, (VillageSafety)safetyChoice, (Weather)weatherChoice);
+        GUI.enabled = Count > 0;
+        if (GUI.Button(new Rect(570, 530, 230, 45), "Clear", control)) Clear();
+        GUI.enabled = true;
+        GUI.Label(new Rect(150, 595, 800, 35), Count == Capacity
+            ? "Platform full. Clear the group to spawn again."
+            : "Storms prioritise rescue. Existing characters keep their roles.", centered);
         GUI.matrix = previous;
     }
 }

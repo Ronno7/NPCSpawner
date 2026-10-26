@@ -1,24 +1,28 @@
-# Abstract Factory NPC Spawner
+# Spawn Systems ++
 
-Requirements based Unity spawn demo following [Gary Woodfine's approach](https://dev.to/gary_woodfine/how-to-use-the-abstract-factory-design-pattern-in-c-1gpa).
+Unity abstract factory demo with three requirements: **time of day**, **village safety**, and **weather**.
 
-## Play
+## Added
 
-Open the [WebGL build](https://ronno7.github.io/NPCSpawner/). Choose **Day / Night** and **Peaceful / Threatened**, then press **Spawn**.
-
-| Village safety | Time | Factory | Character |
-| --- | --- | --- | --- |
-| Peaceful | Day | FriendlyCharacterFactory | Merchant |
-| Peaceful | Night | FriendlyCharacterFactory | Night Watch |
-| Threatened | Day | HostileCharacterFactory | Raider |
-| Threatened | Night | HostileCharacterFactory | Infiltrator |
+- A weather selector and third concrete factory, `RescueCharacterFactory`.
+- Storms prioritise rescue: Rescue Worker by day, Shelter Keeper by night. Clear weather uses the existing friendly or hostile factory.
+- Up to six characters at once, with a Clear button. Existing characters keep their roles.
+- A small platform, simple role props, muted group colours, and a quiet spawn tone.
+- Visual and audio helpers moved into `SpawnPresentation` to keep them separate from factory decisions.
 
 ## How it works
 
-`CharacterFactory` receives `SpawnRequirements` and selects one of two concrete factories based on village safety. That factory uses time of day to create an `INPC`. The scene instantiates a capsule for the result, with a muted group colour, name, and dialogue. Each spawn replaces the previous character.
+`CharacterFactory` receives all three requirements. Weather takes priority, village safety selects friendly or hostile in clear weather, and time selects the character within that factory.
 
-## Project
+| Weather | Safety | Day | Night | Factory |
+| --- | --- | --- | --- | --- |
+| Clear | Peaceful | Merchant | Night Watch | Friendly |
+| Clear | Threatened | Raider | Infiltrator | Hostile |
+| Storm | Either | Rescue Worker | Shelter Keeper | Rescue |
 
-Unity **6000.3.24f1**. Scene: `NPCSpawner/Assets/Scenes/AbstractFactoryDemo.unity`. Scripts: `NPCSpawner/Assets/Scripts/AbstractFactory`.
+## Play
 
-Reference: [Woodfine's sample repository](https://github.com/garywoodfine/software-design-patterns). This demo follows the article's refactored requirements-driven factory structure.
+https://ronno7.github.io/NPCSpawner/
+
+
+Based on [Gary Woodfine's abstract factory approach](https://dev.to/gary_woodfine/how-to-use-the-abstract-factory-design-pattern-in-c-1gpa).
